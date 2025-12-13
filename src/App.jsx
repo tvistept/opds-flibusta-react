@@ -8,6 +8,17 @@ export default function App() {
   const [history, setHistory] = useState(["/opds"]);
   const [authorQuery, setAuthorQuery] = useState("");
 
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
   function goTo(newUrl) {
     setHistory(prev => [...prev, newUrl]);
     setUrl(newUrl);
@@ -73,6 +84,13 @@ export default function App() {
 
   return (
     <div className="container">
+      <button
+        className="button-theme"
+        onClick={() => setIsDark(v => !v)}
+        title="Переключить тему"
+      >
+        {isDark ? "☀️" : "🌙"}
+      </button>
       {/* <h1>OPDS React Viewer</h1> */}
 
       {/* Breadcrumb */}
