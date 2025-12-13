@@ -1,0 +1,16 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+
+# Build
+build/
+dist/
+
+# Editor
+.vscode/
+.idea/
+.DS_Store

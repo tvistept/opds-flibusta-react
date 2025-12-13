@@ -1,0 +1,306 @@
+/* ---------- Ночная тема ---------- */
+body.dark-mode {
+  background-color: #1e1e2f;
+  color: #ddd;
+}
+
+body.dark-mode .container {
+  background-color: #2a2a3c;
+}
+
+body.dark-mode h1, body.dark-mode h2 {
+  color: #fff;
+}
+
+body.dark-mode .breadcrumb a {
+  color: #66aaff;
+}
+
+body.dark-mode .breadcrumb {
+  color: #aaa;
+}
+
+body.dark-mode .button-back,
+body.dark-mode .button-theme,
+body.dark-mode .entry-card .links button,
+body.dark-mode .entry-card .links a {
+  color: #fff;
+}
+
+body.dark-mode .button-back,
+body.dark-mode .button-theme,
+body.dark-mode .entry-card .links button {
+  background-color: #4444aa;
+}
+
+body.dark-mode .button-back:hover,
+body.dark-mode .button-theme:hover,
+body.dark-mode .entry-card .links button:hover {
+  background-color: #222277;
+}
+
+body.dark-mode .entry-card {
+  background-color: #2f2f45;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .entry-card .links a {
+  background-color: #339966;
+}
+
+body.dark-mode .entry-card .links a:hover {
+  background-color: #227744;
+}
+
+
+/* ---------- Общие настройки ---------- */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f2f4f8;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  /* min-height: 100vh; */
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 32px;
+  color: #333;
+}
+
+/* ---------- Breadcrumb ---------- */
+.breadcrumb {
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #555;
+}
+
+.breadcrumb a {
+  margin-right: 5px;
+  text-decoration: none;
+  color: #0077cc;
+}
+
+.breadcrumb span {
+  margin-right: 5px;
+}
+
+/* ---------- Назад ---------- */
+.button-back {
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  border: none;
+  background-color: #0077cc;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.2s;
+}
+
+.button-back:hover {
+  background-color: #005fa3;
+}
+
+/* ---------- Заголовки ---------- */
+h2 {
+  color: #222;
+  margin-bottom: 25px;
+  font-size: 26px;
+}
+
+/* ---------- Сетка карточек ---------- */
+.entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* ---------- Карточка книги ---------- */
+.entry-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.entry-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+/* ---------- Название и автор ---------- */
+.entry-card strong {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.entry-card .authors {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* ---------- Описание / контент ---------- */
+.entry-card .content {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+/* ---------- Кнопки и ссылки ---------- */
+.entry-card .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.entry-card .links button,
+.entry-card .links a {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.entry-card .links button {
+  border: none;
+  background-color: #0077cc;
+  color: #fff;
+}
+
+.entry-card .links button:hover {
+  background-color: #005fa3;
+}
+
+.entry-card .links a {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.entry-card .links a:hover {
+  background-color: #1e7e34;
+}
+
+/* ---------- Адаптивность ---------- */
+@media screen and (max-width: 768px) {
+  .entry-grid {
+    grid-template-columns: 1fr; /* одна колонка на планшетах и мобильных */
+  }
+
+  .entry-card {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  .entry-card strong {
+    font-size: 22px;
+  }
+
+  .entry-card .authors,
+  .entry-card .content {
+    font-size: 20px;
+  }
+
+  .entry-card .links button,
+  .entry-card .links a {
+    font-size: 18px;
+    padding: 10px 18px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .entry-card strong {
+    font-size: 20px;
+  }
+
+  .entry-card .authors,
+  .entry-card .content {
+    font-size: 18px;
+  }
+
+  .entry-card .links button,
+  .entry-card .links a {
+    font-size: 16px;
+    padding: 8px 14px;
+  }
+}
+
+
+.search-form {
+  display: flex;
+  margin: 15px 0;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.button-search {
+  padding: 10px 16px;
+  font-size: 18px;
+  border: none;
+  border-radius: 6px;
+  background-color: #0077cc;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-search:hover {
+  background-color: #005fa3;
+}
+
+/* Ночная тема */
+body.dark-mode .search-input {
+  background-color: #3a3a55;
+  color: #ddd;
+  border: 1px solid #555;
+}
+
+body.dark-mode .button-search {
+  background-color: #4444aa;
+}
+
+body.dark-mode .button-search:hover {
+  background-color: #222277;
+}
