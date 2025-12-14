@@ -1,94 +1,147 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-export default function App() {
-  const [url, setUrl] = useState("/opds");
-  const [entries, setEntries] = useState([]);
-  const [feedTitle, setFeedTitle] = useState("");
-  const [history, setHistory] = useState(["/opds"]);
-  const [authorQuery, setAuthorQuery] = useState("");
-
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) return saved === "dark";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  useEffect(() => {
-    document.body.classList.toggle("dark-mode", isDark);
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
-
-  function goTo(newUrl) {
-    setHistory(prev => [...prev, newUrl]);
-    setUrl(newUrl);
-  }
-
-  function goBack() {
-    setHistory(prev => {
-      if (prev.length <= 1) return prev;
-      const newHistory = prev.slice(0, -1);
-      setUrl(newHistory[newHistory.length - 1]);
-      return newHistory;
-    });
-  }
-
-  function normalizeHref(href) {
-    if (!href) return "";
-    if (href.startsWith("/b")) return href;
-    if (href.startsWith("/opds")) return href;
-    if (href.startsWith("http://flibusta.is")) return href.replace("http://flibusta.is", "");
-    return "/opds" + href;
-  }
-
-  function searchByAuthor(e) {
-    e.preventDefault();
-    if (!authorQuery.trim()) return;
-
-    const searchUrl = `/opds/search?searchTerm=${encodeURIComponent(authorQuery.trim())}`;
-    setHistory(prev => [...prev, searchUrl]);
-    setUrl(searchUrl);
-    setAuthorQuery("");
-  }
-
-  function isIosPwa() {
+function isIosPwa() {
   return (
     /iphone|ipad|ipod/i.test(navigator.userAgent) &&
     window.navigator.standalone === true
   );
 }
 
+function normalizeHref(href) {
+  if (!href) return "";
+  if (href.startsWith("/opds")) return href;
+  if (href.startsWith("/b")) return href;
+  if (href.startsWith("http://flibusta.is"))
+    return href.replace("http://flibusta.is", "");
+  return "/opds" + href;
+}
+
+function parseFeedLinks(xml) {
+  const links = xml.querySelectorAll("feed > link");
+  const result = {};
+
+  links.forEach(link => {
+    const rel = link.getAttribute("rel");
+    const href = link.getAttribute("href");
+    if (rel && href) result[rel] = normalizeHref(href);
+  });
+
+  return result;
+}
+
+export default function App() {
+  const [url, setUrl] = useState("/opds");
+  const [entries, setEntries] = useState([]);
+  const [feedTitle, setFeedTitle] = useState("");
+  const [history, setHistory] = useState(["/opds"]);
+  const [authorQuery, setAuthorQuery] = useState("");
+  const [nextUrl, setNextUrl] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  /* --------------------------------------------------
+     navigation
+  -------------------------------------------------- */
+
+  function goTo(newUrl) {
+    setHistory(prev => [...prev, newUrl]);
+    setUrl(newUrl);
+  }
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
 
   useEffect(() => {
-    async function load(u) {
-      try {
-        const res = await fetch(u);
-        const text = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, "application/xml");
+    document.body.classList.toggle("dark-mode", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
+  function goBack() {
+    setHistory(prev => {
+      if (prev.length <= 1) return prev;
+      const h = prev.slice(0, -1);
+      setUrl(h[h.length - 1]);
+      return h;
+    });
+  }
+
+  function searchByAuthor(e) {
+    e.preventDefault();
+    if (!authorQuery.trim()) return;
+
+    const searchUrl = `/opds/search?searchTerm=${encodeURIComponent(
+      authorQuery.trim()
+    )}`;
+    setHistory(prev => [...prev, searchUrl]);
+    setUrl(searchUrl);
+    setAuthorQuery("");
+  }
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+  async function loadOpds(u, append = false) {
+    try {
+      const res = await fetch(u);
+      const text = await res.text();
+
+      const xml = new DOMParser().parseFromString(text, "application/xml");
+
+      if (!append) {
         setFeedTitle(xml.querySelector("title")?.textContent ?? "");
-
-        const parsed = [...xml.querySelectorAll("entry")].map(e => {
-          const title = e.querySelector("title")?.textContent;
-          const content = e.querySelector("content")?.textContent;
-          const authors = [...e.querySelectorAll("author > name")].map(a => a.textContent);
-          const links = [...e.querySelectorAll("link")].map(l => ({
-            href: l.getAttribute("href"),
-            type: l.getAttribute("type"),
-            rel: l.getAttribute("rel")
-          }));
-          return { title, content, authors, links };
-        });
-
-        setEntries(parsed);
-      } catch (err) {
-        console.error("Load error:", err);
       }
+
+      const parsedEntries = [...xml.querySelectorAll("entry")].map(e => {
+        const title = e.querySelector("title")?.textContent;
+        const content = e.querySelector("content")?.textContent;
+        const authors = [...e.querySelectorAll("author > name")].map(a =>
+          a.textContent
+        );
+        const links = [...e.querySelectorAll("link")].map(l => ({
+          href: l.getAttribute("href"),
+          type: l.getAttribute("type"),
+          rel: l.getAttribute("rel")
+        }));
+
+        return { title, content, authors, links };
+      });
+
+      const feedLinks = parseFeedLinks(xml);
+
+      setEntries(prev =>
+        append ? [...prev, ...parsedEntries] : parsedEntries
+      );
+      setNextUrl(feedLinks.next || null);
+    } catch (err) {
+      console.error("OPDS load error:", err);
+    }
+  }
+
+  useEffect(() => {
+    setEntries([]);
+    setNextUrl(null);
+    loadOpds(url, false);
+    }, [url]);
+
+    useEffect(() => {
+    function onScroll() {
+      setShowScrollTop(window.scrollY > 400);
     }
 
-    load(url);
-  }, [url]);
+    window.addEventListener("scroll", onScroll);
+
+    // важно: удалить listener при размонтировании
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
 
   return (
     <div className="container">
@@ -99,8 +152,6 @@ export default function App() {
       >
         {isDark ? "☀️" : "🌙"}
       </button>
-      {/* <h1>OPDS React Viewer</h1> */}
-
       {/* Breadcrumb */}
       <div className="breadcrumb">
         {history.map((h, i) => {
@@ -123,91 +174,139 @@ export default function App() {
         })}
       </div>
 
-      {/* Назад */}
+      {/* Back */}
       {history.length > 1 && (
-        <button className="button-back" onClick={goBack}>← Назад</button>
+        <button className="button-back" onClick={goBack}>
+          ← Назад
+        </button>
       )}
 
-      <h2>Каталог книг Flibusta</h2>
+      <h2>{feedTitle || "Каталог книг"}</h2>
+
+      {/* Search */}
       {url === "/opds" && (
         <form onSubmit={searchByAuthor} className="search-form">
           <input
             type="text"
-            placeholder="Поиск по автору"
+            placeholder="Поиск по автору или книге"
             value={authorQuery}
             onChange={e => setAuthorQuery(e.target.value)}
             className="search-input"
           />
-          <button type="submit" className="button-search">Найти</button>
+          <button type="submit" className="button-search">
+            Найти
+          </button>
         </form>
       )}
 
-
-      {/* Список записей */}
+      {/* Entries */}
       <div className="entry-grid">
-        
         {entries.map((e, i) => {
-          if (e.title === 'Моя полка') {
-            return (<div key={i}>  </div>)
-          } else {
-            return (
-              <div key={i} className="entry-card">
-                <div>
-                  <strong>{e.title}</strong>
-                  {e.authors.length > 0 && <div className="authors">Автор: {e.authors.join(", ")}</div>}
-                  {e.content && <div className="content" dangerouslySetInnerHTML={{ __html: e.content }} />}
-                </div>
+          if (e.title === "Моя полка") return null;
 
-                <div className="links">
-                  {/* Кнопка открытия каталога */}
-                  {(() => {
-                    const link = e.links.find(l => l.type && l.type.startsWith("application/atom+xml"));
-                    if (link) {
-                      const href = normalizeHref(link.href);
-                      return <button onClick={() => goTo(href)}>Открыть</button>;
-                    }
-                    return null;
-                  })()}
+          return (
+            <div key={i} className="entry-card">
+              <div>
+                <strong>{e.title}</strong>
 
-                  {/* Ссылки на форматы книг */}
-                  {e.links
-                    .filter(l => l.type && (l.type.includes("epub") || l.type.includes("fb2") || l.type.includes("mobi")))
-                    .map((l, j) => {
-                      let format = "";
-                      if (l.type.includes("epub")) format = "EPUB";
-                      else if (l.type.includes("fb2")) format = "FB2";
-                      else if (l.type.includes("mobi")) format = "MOBI";
+                {e.authors.length > 0 && (
+                  <div className="authors">
+                    Автор: {e.authors.join(", ")}
+                  </div>
+                )}
 
-                      const href = normalizeHref(l.href);
-                      return (
-                        <a
-                          key={j}
-                          href={href}
-                          target={isIosPwa() ? "_self" : "_blank"}
-                          rel="noreferrer"
-                          title={isIosPwa() ? "Загрузка откроется в Safari" : ""}
-                          onClick={e => {
-                            if (isIosPwa()) {
-                              e.preventDefault();
-                              // принудительно открываем Safari
-                              window.open(href, "_blank");
-                            }
-                          }}
-                        >
-                          {format}
-                        </a>
-                        // <a key={j} href={href} target="_blank" rel="noreferrer">
-                        //   {format}
-                        // </a>
-                      );
-                    })}
-
-                </div>
+                {e.content && (
+                  <div
+                    className="content"
+                    dangerouslySetInnerHTML={{ __html: e.content }}
+                  />
+                )}
               </div>
-            )
-          }
+
+              <div className="links">
+                {/* Open catalog */}
+                {(() => {
+                  const link = e.links.find(
+                    l =>
+                      l.type &&
+                      l.type.startsWith("application/atom+xml")
+                  );
+                  if (!link) return null;
+                  return (
+                    <button onClick={() => goTo(normalizeHref(link.href))}>
+                      Открыть
+                    </button>
+                  );
+                })()}
+
+                {/* Book formats */}
+                {e.links
+                  .filter(
+                    l =>
+                      l.type &&
+                      (l.type.includes("epub") ||
+                        l.type.includes("fb2") ||
+                        l.type.includes("mobi"))
+                  )
+                  .map((l, j) => {
+                    let format = "BOOK";
+                    if (l.type.includes("epub")) format = "EPUB";
+                    if (l.type.includes("fb2")) format = "FB2";
+                    if (l.type.includes("mobi")) format = "MOBI";
+
+                    const href = normalizeHref(l.href);
+
+                    return (
+                      <a
+                        key={j}
+                        href={href}
+                        rel="noreferrer"
+                        title={
+                          isIosPwa()
+                            ? "Загрузка откроется в Safari"
+                            : ""
+                        }
+                        target={isIosPwa() ? "_self" : "_blank"}
+                        onClick={ev => {
+                          if (isIosPwa()) {
+                            ev.preventDefault();
+                            window.open(href, "_blank");
+                          }
+                        }}
+                      >
+                        {format}
+                      </a>
+                    );
+                  })}
+              </div>
+            </div>
+          );
         })}
       </div>
+
+      {/* Pagination */}
+      {nextUrl && (
+        <div style={{ textAlign: "center", marginTop: 20 }}>
+          <button
+            className="button-back"
+            disabled={loadingMore}
+            onClick={async () => {
+              setLoadingMore(true);
+              await loadOpds(nextUrl, true);
+              setLoadingMore(false);
+            }}
+          >
+            {loadingMore ? "Загрузка…" : "Показать ещё"}
+          </button>
+        </div>
+      )}
+      <button
+        className={`button-scroll-top ${showScrollTop ? "visible" : ""}`}
+        onClick={scrollToTop}
+        title="Наверх"
+      >
+        ↑
+      </button>
     </div>
   );
 }
