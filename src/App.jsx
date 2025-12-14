@@ -308,11 +308,12 @@ export default function App() {
                         }
                         target={isIosPwa() ? "_self" : "_blank"}
                         onClick={ev => {
-                          if (isIosPwa()) {
-                            ev.preventDefault();
-                            window.open(href, "_blank");
-                          }
-                        }}
+                            if (isIosPwa()) {
+                              ev.preventDefault();
+                              // ⬇️ ЖЁСТКИЙ переход — гарантированно открывает Safari
+                              window.location.href = href;
+                            }
+                          }}
                       >
                         {format}
                       </a>
