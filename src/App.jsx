@@ -30,6 +30,44 @@ function parseFeedLinks(xml) {
   return result;
 }
 
+function processOpdsContent(html, maxLen = 200) {
+  if (!html) return "";
+
+  // 1. Ищем начало служебной информации
+  const metaRegex =
+    /<br\s*\/?>\s*(Год издания|Формат|Язык|Размер)\s*:/i;
+
+  let mainPart = html;
+  let metaPart = "";
+
+  const match = html.match(metaRegex);
+  if (match) {
+    const idx = match.index;
+    mainPart = html.slice(0, idx);
+    metaPart = html.slice(idx);
+  }
+
+  // 2. Убираем HTML из основной части
+  const tmp = document.createElement("div");
+  tmp.innerHTML = mainPart;
+  const text = tmp.textContent || tmp.innerText || "";
+
+  // 3. Обрезаем текст
+  let shortText = text.trim();
+  if (shortText.length > maxLen) {
+    shortText = shortText.slice(0, maxLen).trimEnd() + "…";
+  }
+
+  // 4. Собираем финальный HTML
+  let result = shortText;
+
+  if (metaPart) {
+    result += "<br/>" + metaPart;
+  }
+
+  return result;
+}
+
 export default function App() {
   const [url, setUrl] = useState("/opds");
   const [entries, setEntries] = useState([]);
@@ -101,7 +139,9 @@ export default function App() {
 
       const parsedEntries = [...xml.querySelectorAll("entry")].map(e => {
         const title = e.querySelector("title")?.textContent;
-        const content = e.querySelector("content")?.textContent;
+        // const content = e.querySelector("content")?.textContent;
+        const rawContent = e.querySelector("content")?.textContent;
+        const content = processOpdsContent(rawContent, 200);
         const authors = [...e.querySelectorAll("author > name")].map(a =>
           a.textContent
         );
@@ -129,9 +169,9 @@ export default function App() {
     setEntries([]);
     setNextUrl(null);
     loadOpds(url, false);
-    }, [url]);
+  }, [url]);
 
-    useEffect(() => {
+  useEffect(() => {
     function onScroll() {
       setShowScrollTop(window.scrollY > 400);
     }
