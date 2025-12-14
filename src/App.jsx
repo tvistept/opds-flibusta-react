@@ -51,6 +51,14 @@ export default function App() {
     setAuthorQuery("");
   }
 
+  function isIosPwa() {
+  return (
+    /iphone|ipad|ipod/i.test(navigator.userAgent) &&
+    window.navigator.standalone === true
+  );
+}
+
+
   useEffect(() => {
     async function load(u) {
       try {
@@ -172,9 +180,25 @@ export default function App() {
 
                       const href = normalizeHref(l.href);
                       return (
-                        <a key={j} href={href} target="_blank" rel="noreferrer">
+                        <a
+                          key={j}
+                          href={href}
+                          target={isIosPwa() ? "_self" : "_blank"}
+                          rel="noreferrer"
+                          title={isIosPwa() ? "Загрузка откроется в Safari" : ""}
+                          onClick={e => {
+                            if (isIosPwa()) {
+                              e.preventDefault();
+                              // принудительно открываем Safari
+                              window.open(href, "_blank");
+                            }
+                          }}
+                        >
                           {format}
                         </a>
+                        // <a key={j} href={href} target="_blank" rel="noreferrer">
+                        //   {format}
+                        // </a>
                       );
                     })}
 
