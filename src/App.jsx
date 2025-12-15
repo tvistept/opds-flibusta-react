@@ -193,15 +193,25 @@ export default function App() {
           ← Назад
         </button>
 
-        <h2>Загрузка книги</h2>
+        <h2>Скачивание книги</h2>
 
         <p>
-          iOS открывает загрузку книг в Safari.
+          iOS не позволяет скачивать книги напрямую из приложений.
         </p>
+
+        <p>
+          Чтобы загрузить файл:
+        </p>
+
+        <ol style={{ marginLeft: 20 }}>
+          <li>Нажмите и удерживайте кнопку ниже</li>
+          <li>В появившемся меню выберите <b>«Скопировать ссылку»</b></li>
+          <li>Откройте браузер Safari</li>
+          <li>Вставьте ссылку в адресную строку и откройте её</li>
+        </ol>
 
         <a
           href={fileUrl}
-          target="_blank"
           rel="noopener noreferrer"
           style={{
             display: "inline-block",
@@ -209,24 +219,15 @@ export default function App() {
             background: "#0077cc",
             color: "#fff",
             borderRadius: 6,
-            textDecoration: "none"
+            textDecoration: "none",
+            marginTop: 8
           }}
         >
-          Открыть ссылку в Safari
+          Ссылка на файл книги
         </a>
 
-        {/* <button
-          className="button-back"
-          onClick={() => {
-            // window.location.href = fileUrl;
-            window.open(fileUrl, "_blank");
-          }}
-        >
-          Открыть в Safari
-        </button> */}
-
-        <p style={{ marginTop: 12, opacity: 0.7 }}>
-          После загрузки вернитесь назад в приложение
+        <p style={{ marginTop: 16, opacity: 0.7 }}>
+          После загрузки книги вы можете вернуться обратно в приложение.
         </p>
       </div>
     );
