@@ -187,6 +187,7 @@ export default function App() {
     const fileUrl = params.get("url");
 
     return (
+      
       <div className="container">
         <button className="button-back" onClick={goBack}>
           ← Назад
@@ -198,7 +199,23 @@ export default function App() {
           iOS открывает загрузку книг в Safari.
         </p>
 
-        <button
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block",
+            padding: "12px 18px",
+            background: "#0077cc",
+            color: "#fff",
+            borderRadius: 6,
+            textDecoration: "none"
+          }}
+        >
+          Открыть ссылку в Safari
+        </a>
+
+        {/* <button
           className="button-back"
           onClick={() => {
             // window.location.href = fileUrl;
@@ -206,7 +223,7 @@ export default function App() {
           }}
         >
           Открыть в Safari
-        </button>
+        </button> */}
 
         <p style={{ marginTop: 12, opacity: 0.7 }}>
           После загрузки вернитесь назад в приложение
