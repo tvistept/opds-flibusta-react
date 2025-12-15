@@ -68,30 +68,30 @@ function processOpdsContent(html, maxLen = 200) {
   return result;
 }
 
-function DownloadPage({ url }) {
-  return (
-    <div style={{ textAlign: "center", padding: 40 }}>
-      <h2>Загрузка книги</h2>
+// function DownloadPage({ url }) {
+//   return (
+//     <div style={{ textAlign: "center", padding: 40 }}>
+//       <h2>Загрузка книги</h2>
 
-      <p style={{ marginBottom: 20 }}>
-        iOS открывает загрузку книг в Safari.
-      </p>
+//       <p style={{ marginBottom: 20 }}>
+//         iOS открывает загрузку книг в Safari.
+//       </p>
 
-      <button
-        className="button-back"
-        onClick={() => {
-          window.location.href = url;
-        }}
-      >
-        Открыть в Safari
-      </button>
+//       <button
+//         className="button-back"
+//         onClick={() => {
+//           window.location.href = url;
+//         }}
+//       >
+//         Открыть в Safari
+//       </button>
 
-      <p style={{ marginTop: 20, fontSize: 14, opacity: 0.7 }}>
-        После загрузки вернитесь назад в приложение
-      </p>
-    </div>
-  );
-}
+//       <p style={{ marginTop: 20, fontSize: 14, opacity: 0.7 }}>
+//         После загрузки вернитесь назад в приложение
+//       </p>
+//     </div>
+//   );
+// }
 
 
 export default function App() {
@@ -207,6 +207,38 @@ export default function App() {
     // важно: удалить listener при размонтировании
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (url.startsWith("/download")) {
+    const params = new URLSearchParams(url.split("?")[1]);
+    const fileUrl = params.get("url");
+
+    return (
+      <div className="container">
+        <button className="button-back" onClick={goBack}>
+          ← Назад
+        </button>
+
+        <h2>Загрузка книги</h2>
+
+        <p>
+          iOS открывает загрузку книг в Safari.
+        </p>
+
+        <button
+          className="button-back"
+          onClick={() => {
+            window.location.href = fileUrl;
+          }}
+        >
+          Открыть в Safari
+        </button>
+
+        <p style={{ marginTop: 12, opacity: 0.7 }}>
+          После загрузки вернитесь назад в приложение
+        </p>
+      </div>
+    );
+  }
 
 
   return (
@@ -326,24 +358,12 @@ export default function App() {
                       <a
                         key={j}
                         href={href}
-                        rel="noreferrer"
-                        title={
-                          isIosPwa()
-                            ? "Загрузка откроется в Safari"
-                            : ""
-                        }
-                        target={isIosPwa() ? "_self" : "_blank"}
                         onClick={ev => {
-                            // if (isIosPwa()) {
-                            //   ev.preventDefault();
-                            //   // ⬇️ ЖЁСТКИЙ переход — гарантированно открывает Safari
-                            //   window.location.href = href;
-                            // }
-                            if (isIosPwa()) {
-                              goTo(`/download?url=${encodeURIComponent(href)}`);
-                              return;
-                            }
-                          }}
+                          if (isIosPwa()) {
+                            ev.preventDefault();
+                            goTo(`/download?url=${encodeURIComponent(href)}`);
+                          }
+                        }}
                       >
                         {format}
                       </a>
