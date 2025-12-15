@@ -68,6 +68,32 @@ function processOpdsContent(html, maxLen = 200) {
   return result;
 }
 
+function DownloadPage({ url }) {
+  return (
+    <div style={{ textAlign: "center", padding: 40 }}>
+      <h2>Загрузка книги</h2>
+
+      <p style={{ marginBottom: 20 }}>
+        iOS открывает загрузку книг в Safari.
+      </p>
+
+      <button
+        className="button-back"
+        onClick={() => {
+          window.location.href = url;
+        }}
+      >
+        Открыть в Safari
+      </button>
+
+      <p style={{ marginTop: 20, fontSize: 14, opacity: 0.7 }}>
+        После загрузки вернитесь назад в приложение
+      </p>
+    </div>
+  );
+}
+
+
 export default function App() {
   const [url, setUrl] = useState("/opds");
   const [entries, setEntries] = useState([]);
@@ -308,10 +334,14 @@ export default function App() {
                         }
                         target={isIosPwa() ? "_self" : "_blank"}
                         onClick={ev => {
+                            // if (isIosPwa()) {
+                            //   ev.preventDefault();
+                            //   // ⬇️ ЖЁСТКИЙ переход — гарантированно открывает Safari
+                            //   window.location.href = href;
+                            // }
                             if (isIosPwa()) {
-                              ev.preventDefault();
-                              // ⬇️ ЖЁСТКИЙ переход — гарантированно открывает Safari
-                              window.location.href = href;
+                              goTo(`/download?url=${encodeURIComponent(href)}`);
+                              return;
                             }
                           }}
                       >
